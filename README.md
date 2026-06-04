@@ -2,6 +2,9 @@
   <img src="docs/krateo-loves-glance.png" alt="Krateo loves OpenStack Glance" width="900"/>
 </p>
 
+> 📖 **[Quickstart](docs/quickstart.md)** — install the operator and see a resource appear in Horizon.
+
+
 # openstack-glance-operator-kog
 
 Krateo Operator Generator (KOG) packaging that turns **OpenStack Glance (image v2)** resources
