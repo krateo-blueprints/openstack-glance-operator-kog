@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/krateo-loves-glance.png" alt="Krateo loves OpenStack Glance" width="900"/>
+</p>
+
 # openstack-glance-operator-kog
 
 Krateo Operator Generator (KOG) packaging that turns **OpenStack Glance (image v2)** resources
