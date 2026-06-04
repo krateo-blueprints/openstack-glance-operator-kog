@@ -1,0 +1,98 @@
+openapi: 3.0.3
+info:
+  title: OpenStack Image (Glance) v2 - Image Members (KOG-friendly subset)
+  description: |
+    Share an image with another project (create / get / delete a member).
+    Glance member create takes a flat body {member: "<project_id>"}; status of a
+    member is updated by the *target* project (accept/reject) and is out of scope
+    here. The Kind is `ImageMember`. The owning image_id and the member id are
+    path segments carried in spec.
+  version: "2.0"
+servers:
+  - url: {{ include "openstack-glance-operator-kog.authBridgeUrl" . }}
+    description: In-cluster Keystone-auth proxy in front of Glance
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+  schemas:
+    MemberCreate:
+      type: object
+      required:
+        - image_id
+        - member
+      properties:
+        image_id:
+          type: string
+          description: Image to share (path parameter).
+        member:
+          type: string
+          description: Project ID to share the image with.
+    Member:
+      type: object
+      properties:
+        member_id:
+          type: string
+          readOnly: true
+        image_id:
+          type: string
+          readOnly: true
+        status:
+          type: string
+          readOnly: true
+security:
+  - bearer: []
+paths:
+  /v2/images/{image_id}/members:
+    parameters:
+      - name: image_id
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: createMember
+      summary: Share an image with a project
+      tags: [image-members]
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemberCreate'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+  /v2/images/{image_id}/members/{member_id}:
+    parameters:
+      - { name: image_id, in: path, required: true, schema: { type: string } }
+      - { name: member_id, in: path, required: true, schema: { type: string } }
+    get:
+      operationId: getMember
+      summary: Show image member details
+      tags: [image-members]
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Member'
+    delete:
+      operationId: deleteMember
+      summary: Unshare (delete a member)
+      tags: [image-members]
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Deleted

@@ -1,0 +1,87 @@
+openapi: 3.0.3
+info:
+  title: OpenStack Image (Glance) v2 - Image Import (KOG-friendly subset)
+  description: |
+    Trigger a web-download import on a queued image: Glance fetches the image
+    data from a URL and the image becomes ACTIVE - the KOG-friendly alternative
+    to the binary PUT /v2/images/{id}/file upload. Modeled as a single-fire
+    action CR (like KOG's NodeProvision): create fires POST /v2/images/{id}/import
+    once. The Kind is `ImageImport`.
+
+    Prerequisites: the image must be in `queued` state and the Glance deployment
+    must enable the `web-download` import method.
+  version: "2.0"
+servers:
+  - url: {{ include "openstack-glance-operator-kog.authBridgeUrl" . }}
+    description: In-cluster Keystone-auth proxy in front of Glance
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+  schemas:
+    ImportMethod:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Import method; use "web-download".
+        uri:
+          type: string
+          description: Source URL of the image data.
+    ImageImportRequest:
+      type: object
+      required:
+        - image_id
+        - method
+      properties:
+        image_id:
+          type: string
+          description: ID of the queued image to import into (path parameter).
+        method:
+          $ref: '#/components/schemas/ImportMethod'
+security:
+  - bearer: []
+paths:
+  /v2/images:
+    get:
+      operationId: listImagesForImport
+      summary: List images (observe path for the import action)
+      tags: [image-import]
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  images:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+  /v2/images/{image_id}/import:
+    parameters:
+      - name: image_id
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: importImage
+      summary: Start a web-download import on an image
+      tags: [image-import]
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageImportRequest'
+      responses:
+        '202':
+          description: Accepted - import started

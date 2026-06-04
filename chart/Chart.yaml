@@ -1,0 +1,23 @@
+apiVersion: v2
+name: openstack-glance-operator-kog
+description: |
+  Krateo Operator Generator (KOG) packaging that turns OpenStack Glance
+  image resources (images, web-download imports and image members) into
+  native Kubernetes custom resources, driven by oasgen-provider +
+  rest-dynamic-controller.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - krateo
+  - kog
+  - oasgen-provider
+  - openstack
+  - glance
+  - image
+  - operator
+home: https://github.com/braghettos/openstack-glance-operator-kog
+sources:
+  - https://github.com/braghettos/openstack-glance-operator-kog
+maintainers:
+  - name: braghettos

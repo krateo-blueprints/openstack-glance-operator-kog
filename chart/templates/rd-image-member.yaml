@@ -1,0 +1,41 @@
+{{- if .Values.restdefinitions.imagemember.enabled }}
+apiVersion: ogen.krateo.io/v1alpha1
+kind: RestDefinition
+metadata:
+  name: {{ .Release.Name }}-image-member
+  labels:
+    {{- include "openstack-glance-operator-kog.labels" . | nindent 4 }}
+spec:
+  oasPath: configmap://{{ .Release.Namespace }}/{{ .Release.Name }}-image-member/imagemember.yaml
+  resourceGroup: {{ .Values.restdefinitions.imagemember.resourceGroup }}
+  resource:
+    kind: {{ .Values.restdefinitions.imagemember.resourceKind }}
+    identifiers:
+      - member
+    additionalStatusFields:
+      - member_id
+      - status
+    verbsDescription:
+      - action: create
+        method: POST
+        path: /v2/images/{image_id}/members
+        requestFieldMapping:
+          - inPath: image_id
+            inCustomResource: spec.image_id
+      - action: get
+        method: GET
+        path: /v2/images/{image_id}/members/{member_id}
+        requestFieldMapping:
+          - inPath: image_id
+            inCustomResource: spec.image_id
+          - inPath: member_id
+            inCustomResource: spec.member
+      - action: delete
+        method: DELETE
+        path: /v2/images/{image_id}/members/{member_id}
+        requestFieldMapping:
+          - inPath: image_id
+            inCustomResource: spec.image_id
+          - inPath: member_id
+            inCustomResource: spec.member
+{{- end }}

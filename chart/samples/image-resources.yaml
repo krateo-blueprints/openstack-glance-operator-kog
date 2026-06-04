@@ -1,0 +1,38 @@
+# Sample Glance CRs. The auth-bridge proxy injects the real token, so the bearer
+# token in each <Kind>Configuration is a placeholder.
+#   kubectl create secret generic glance-token --from-literal=token=proxy-injects-real-token -n krateo-system
+---
+apiVersion: image.openstack.krateo.io/v1alpha1
+kind: ImageConfiguration
+metadata:
+  name: glance-config
+  namespace: krateo-system
+spec:
+  authentication:
+    bearer:
+      tokenRef: { name: glance-token, namespace: krateo-system, key: token }
+---
+apiVersion: image.openstack.krateo.io/v1alpha1
+kind: Image
+metadata:
+  name: cirros
+  namespace: krateo-system
+spec:
+  configurationRef: { name: glance-config, namespace: krateo-system }
+  name: cirros-0.6.2
+  disk_format: qcow2
+  container_format: bare
+  visibility: private
+---
+# Populate the queued image from a URL (makes it ACTIVE). Fill in the Image's id.
+apiVersion: image.openstack.krateo.io/v1alpha1
+kind: ImageImport
+metadata:
+  name: cirros-import
+  namespace: krateo-system
+spec:
+  configurationRef: { name: glance-config-import, namespace: krateo-system }
+  image_id: "<cirros Image status.id>"
+  method:
+    name: web-download
+    uri: "https://download.cirros-cloud.net/0.6.2/cirros-0.6.2-x86_64-disk.img"

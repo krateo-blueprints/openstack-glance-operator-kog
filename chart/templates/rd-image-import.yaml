@@ -1,0 +1,29 @@
+{{- if .Values.restdefinitions.imageimport.enabled }}
+apiVersion: ogen.krateo.io/v1alpha1
+kind: RestDefinition
+metadata:
+  name: {{ .Release.Name }}-image-import
+  labels:
+    {{- include "openstack-glance-operator-kog.labels" . | nindent 4 }}
+spec:
+  oasPath: configmap://{{ .Release.Namespace }}/{{ .Release.Name }}-image-import/imageimport.yaml
+  resourceGroup: {{ .Values.restdefinitions.imageimport.resourceGroup }}
+  resource:
+    # web-download import is a one-shot action. findby on the image list never
+    # matches image_id, so create (POST .../import) fires; the 202 sets a Pending
+    # condition so it fires exactly once.
+    kind: {{ .Values.restdefinitions.imageimport.resourceKind }}
+    identifiers:
+      - image_id
+    verbsDescription:
+      - action: findby
+        method: GET
+        path: /v2/images
+        identifiersMatchPolicy: OR
+      - action: create
+        method: POST
+        path: /v2/images/{image_id}/import
+        requestFieldMapping:
+          - inPath: image_id
+            inCustomResource: spec.image_id
+{{- end }}
