@@ -1,0 +1,11 @@
+{{- if .Values.restdefinitions.imageimport.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-image-import
+  labels:
+    {{- include "openstack-glance-operator-kog.labels" . | nindent 4 }}
+data:
+  imageimport.yaml: |
+{{ tpl (.Files.Get "assets/image-import.yaml") . | indent 4 }}
+{{- end }}

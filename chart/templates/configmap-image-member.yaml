@@ -1,0 +1,11 @@
+{{- if .Values.restdefinitions.imagemember.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-image-member
+  labels:
+    {{- include "openstack-glance-operator-kog.labels" . | nindent 4 }}
+data:
+  imagemember.yaml: |
+{{ tpl (.Files.Get "assets/image-member.yaml") . | indent 4 }}
+{{- end }}

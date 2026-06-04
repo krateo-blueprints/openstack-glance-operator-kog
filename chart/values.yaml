@@ -1,0 +1,63 @@
+# Default values for openstack-glance-operator-kog.
+
+# Toggle the per-resource RestDefinitions emitted by this chart. Glance v2 uses
+# flat JSON (no envelope), so there is no Kind-vs-property collision and Kinds
+# are unprefixed. Glance updates are JSON-Patch only, so resources carry no
+# `update` verb (like the Ironic operator).
+restdefinitions:
+  image:
+    enabled: true
+    resourceGroup: image.openstack.krateo.io
+    resourceKind: Image
+  imageimport:
+    # web-download import makes a queued image ACTIVE by fetching a URL - the
+    # KOG-friendly alternative to the binary PUT .../file upload (octet-stream,
+    # out of KOG's reach). Single-fire action, like KOG's NodeProvision.
+    enabled: true
+    resourceGroup: image.openstack.krateo.io
+    resourceKind: ImageImport
+  imagemember:
+    enabled: true
+    resourceGroup: image.openstack.krateo.io
+    resourceKind: ImageMember
+
+# auth-bridge: a stateless Keystone-auth reverse proxy (openstacksdk) that
+# auto-refreshes the token and works in-cluster. The generated controller's
+# plain-HTTP calls go here; the proxy injects a fresh X-Auth-Token and forwards
+# to the discovered `image` endpoint.
+#
+#   kubectl create secret generic glance-clouds --from-file=clouds.yaml=clouds.yaml
+authBridge:
+  enabled: true
+  replicaCount: 1
+  cloudsSecret: glance-clouds
+  osCloud: openstack
+  serviceType: image
+  osInterface: internal
+  # Override the discovered endpoint (optional, e.g. http://glance-api.openstack.svc.cluster.local:9292).
+  upstreamEndpoint: ""
+  image:
+    repository: quay.io/airshipit/openstack-client
+    tag: "2026.1-ubuntu_noble"
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 8080
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+serviceAccount:
+  create: false
+  name: ""
+
+nameOverride: ""
+fullnameOverride: ""

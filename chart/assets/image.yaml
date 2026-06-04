@@ -1,0 +1,126 @@
+openapi: 3.0.3
+info:
+  title: OpenStack Image (Glance) v2 - Images (KOG-friendly subset)
+  description: |
+    Hand-crafted OpenAPI 3.0 subset of the Glance v2 API covering Image metadata
+    (create / get / delete). Glance v2 uses FLAT JSON (no envelope), so the CR
+    spec fields are top-level and the Kind is the unprefixed `Image`.
+
+    No update verb: Glance image update is JSON-Patch only (content-type
+    application/openstack-images-v2.1-json-patch), which KOG cannot emit - change
+    an image by delete + recreate. Binary data upload (PUT /v2/images/{id}/file)
+    is octet-stream and out of KOG's reach; use the companion `ImageImport`
+    (web-download) to populate an image from a URL.
+  version: "2.0"
+servers:
+  - url: {{ include "openstack-glance-operator-kog.authBridgeUrl" . }}
+    description: In-cluster Keystone-auth proxy in front of Glance
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+  schemas:
+    ImageCreate:
+      type: object
+      required:
+        - name
+        - disk_format
+        - container_format
+      properties:
+        name:
+          type: string
+        disk_format:
+          type: string
+          description: "qcow2, raw, vmdk, vdi, iso, ..."
+        container_format:
+          type: string
+          description: "bare, ovf, ..."
+        visibility:
+          type: string
+          description: "public, private, shared, community."
+        min_disk:
+          type: integer
+        min_ram:
+          type: integer
+        protected:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+    Image:
+      type: object
+      properties:
+        id:
+          type: string
+          readOnly: true
+        name:
+          type: string
+        status:
+          type: string
+          readOnly: true
+        disk_format:
+          type: string
+        container_format:
+          type: string
+        visibility:
+          type: string
+        size:
+          type: integer
+          readOnly: true
+        checksum:
+          type: string
+          readOnly: true
+security:
+  - bearer: []
+paths:
+  /v2/images:
+    post:
+      operationId: createImage
+      summary: Create an image (metadata; status=queued until data is supplied)
+      tags: [images]
+      security:
+        - bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ImageCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+  /v2/images/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      operationId: getImage
+      summary: Show image details
+      tags: [images]
+      security:
+        - bearer: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Image'
+    delete:
+      operationId: deleteImage
+      summary: Delete an image
+      tags: [images]
+      security:
+        - bearer: []
+      responses:
+        '204':
+          description: Deleted

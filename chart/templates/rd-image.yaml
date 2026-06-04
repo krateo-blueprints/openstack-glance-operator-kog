@@ -1,0 +1,37 @@
+{{- if .Values.restdefinitions.image.enabled }}
+apiVersion: ogen.krateo.io/v1alpha1
+kind: RestDefinition
+metadata:
+  name: {{ .Release.Name }}-image
+  labels:
+    {{- include "openstack-glance-operator-kog.labels" . | nindent 4 }}
+spec:
+  oasPath: configmap://{{ .Release.Namespace }}/{{ .Release.Name }}-image/image.yaml
+  resourceGroup: {{ .Values.restdefinitions.image.resourceGroup }}
+  resource:
+    # Glance v2 is flat JSON (no envelope). No update verb: Glance PATCH is
+    # JSON-Patch only. Binary upload is out of scope - use ImageImport.
+    kind: {{ .Values.restdefinitions.image.resourceKind }}
+    identifiers:
+      - id
+      - name
+    additionalStatusFields:
+      - id
+      - status
+    verbsDescription:
+      - action: create
+        method: POST
+        path: /v2/images
+      - action: get
+        method: GET
+        path: /v2/images/{id}
+        requestFieldMapping:
+          - inPath: id
+            inCustomResource: status.id
+      - action: delete
+        method: DELETE
+        path: /v2/images/{id}
+        requestFieldMapping:
+          - inPath: id
+            inCustomResource: status.id
+{{- end }}
