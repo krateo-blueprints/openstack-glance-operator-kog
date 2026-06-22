@@ -15,9 +15,16 @@ keywords:
   - openstack
   - glance
   - image
+  - storage
   - operator
 home: https://github.com/braghettos/openstack-glance-operator-kog
 sources:
   - https://github.com/braghettos/openstack-glance-operator-kog
 maintainers:
   - name: braghettos
+icon: https://raw.githubusercontent.com/krateoplatformops/krateo/main/docs/media/logo.svg
+annotations:
+  krateo.io/category: storage
+  krateo.io/display-name: OpenStack Glance KOG
+  krateo.io/maturity: beta
+  krateoSupportedVersion: ">= 2.5.1"

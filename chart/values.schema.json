@@ -1,0 +1,265 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "openstack-glance-operator-kog values",
+  "description": "Values for the OpenStack Glance KOG (Krateo Operator Generator) chart. It emits per-resource RestDefinitions for Glance image v2 resources and a stateless Keystone-auth bridge proxy. Toggle resources and point the auth-bridge at your Glance/Keystone deployment.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "restdefinitions": {
+      "type": "object",
+      "description": "Per-resource RestDefinitions emitted by this chart. Each entry can be toggled on/off and carries its resourceGroup and resourceKind.",
+      "additionalProperties": false,
+      "properties": {
+        "image": {
+          "type": "object",
+          "description": "Glance Image (metadata) resource: create / get / delete. Glance v2 is flat JSON so the Kind is unprefixed. No update verb (Glance update is JSON-Patch only).",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Emit the RestDefinition for the Image resource.",
+              "default": true
+            },
+            "resourceGroup": {
+              "type": "string",
+              "description": "API group for the generated Image CRD.",
+              "default": "image.openstack.krateo.io"
+            },
+            "resourceKind": {
+              "type": "string",
+              "description": "Kind of the generated Image CRD.",
+              "default": "Image"
+            }
+          }
+        },
+        "imageimport": {
+          "type": "object",
+          "description": "Glance ImageImport (web-download) resource: a single-fire action that populates a queued image from a URL, making it ACTIVE.",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Emit the RestDefinition for the ImageImport resource.",
+              "default": true
+            },
+            "resourceGroup": {
+              "type": "string",
+              "description": "API group for the generated ImageImport CRD.",
+              "default": "image.openstack.krateo.io"
+            },
+            "resourceKind": {
+              "type": "string",
+              "description": "Kind of the generated ImageImport CRD.",
+              "default": "ImageImport"
+            }
+          }
+        },
+        "imagemember": {
+          "type": "object",
+          "description": "Glance ImageMember resource: share / get / unshare an image with another project.",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Emit the RestDefinition for the ImageMember resource.",
+              "default": true
+            },
+            "resourceGroup": {
+              "type": "string",
+              "description": "API group for the generated ImageMember CRD.",
+              "default": "image.openstack.krateo.io"
+            },
+            "resourceKind": {
+              "type": "string",
+              "description": "Kind of the generated ImageMember CRD.",
+              "default": "ImageMember"
+            }
+          }
+        }
+      }
+    },
+    "authBridge": {
+      "type": "object",
+      "description": "Stateless Keystone-auth reverse proxy (openstacksdk). Authenticates with clouds.yaml, discovers the Glance image endpoint, injects a fresh auto-refreshing X-Auth-Token and forwards the controller's plain-HTTP calls upstream.",
+      "additionalProperties": false,
+      "required": [
+        "upstreamEndpoint"
+      ],
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Deploy the auth-bridge proxy.",
+          "default": true
+        },
+        "replicaCount": {
+          "type": "integer",
+          "description": "Number of auth-bridge replicas.",
+          "default": 1,
+          "minimum": 0
+        },
+        "cloudsSecret": {
+          "type": "string",
+          "description": "Name of the Secret holding clouds.yaml (key clouds.yaml). Create it with: kubectl create secret generic glance-clouds --from-file=clouds.yaml=clouds.yaml.",
+          "default": "glance-clouds"
+        },
+        "osCloud": {
+          "type": "string",
+          "description": "Cloud name in clouds.yaml to authenticate as (OS_CLOUD).",
+          "default": "openstack"
+        },
+        "serviceType": {
+          "type": "string",
+          "description": "Keystone catalog service type to discover the endpoint for (SERVICE_TYPE). For Glance this is 'image'.",
+          "default": "image"
+        },
+        "osInterface": {
+          "type": "string",
+          "description": "Keystone catalog interface to use when discovering the endpoint (OS_INTERFACE), e.g. internal, public or admin.",
+          "default": "internal"
+        },
+        "upstreamEndpoint": {
+          "type": "string",
+          "description": "THE key user input: the upstream Glance image endpoint. Leave empty to let openstacksdk discover it from the Keystone catalog, or override it explicitly, e.g. http://glance-api.openstack.svc.cluster.local:9292.",
+          "default": ""
+        },
+        "image": {
+          "type": "object",
+          "description": "Container image for the auth-bridge proxy.",
+          "additionalProperties": false,
+          "properties": {
+            "repository": {
+              "type": "string",
+              "description": "Image repository.",
+              "default": "quay.io/airshipit/openstack-client"
+            },
+            "tag": {
+              "type": "string",
+              "description": "Image tag.",
+              "default": "2026.1-ubuntu_noble"
+            },
+            "pullPolicy": {
+              "type": "string",
+              "description": "Image pull policy.",
+              "default": "IfNotPresent",
+              "enum": [
+                "Always",
+                "IfNotPresent",
+                "Never"
+              ]
+            }
+          }
+        },
+        "service": {
+          "type": "object",
+          "description": "Service exposing the auth-bridge proxy in-cluster.",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "Kubernetes Service type.",
+              "default": "ClusterIP"
+            },
+            "port": {
+              "type": "integer",
+              "description": "Service port the proxy listens on.",
+              "default": 8080,
+              "minimum": 1,
+              "maximum": 65535
+            }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "description": "Compute resource requests and limits for the auth-bridge proxy container.",
+          "additionalProperties": false,
+          "properties": {
+            "requests": {
+              "type": "object",
+              "description": "Resource requests.",
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": "string",
+                  "description": "CPU request.",
+                  "default": "20m"
+                },
+                "memory": {
+                  "type": "string",
+                  "description": "Memory request.",
+                  "default": "64Mi"
+                }
+              }
+            },
+            "limits": {
+              "type": "object",
+              "description": "Resource limits.",
+              "additionalProperties": false,
+              "properties": {
+                "cpu": {
+                  "type": "string",
+                  "description": "CPU limit.",
+                  "default": "500m"
+                },
+                "memory": {
+                  "type": "string",
+                  "description": "Memory limit.",
+                  "default": "256Mi"
+                }
+              }
+            }
+          }
+        },
+        "podAnnotations": {
+          "type": "object",
+          "description": "Annotations to add to the auth-bridge pod.",
+          "default": {}
+        },
+        "nodeSelector": {
+          "type": "object",
+          "description": "Node selector for the auth-bridge pod.",
+          "default": {}
+        },
+        "tolerations": {
+          "type": "array",
+          "description": "Tolerations for the auth-bridge pod.",
+          "default": [],
+          "items": {
+            "type": "object"
+          }
+        },
+        "affinity": {
+          "type": "object",
+          "description": "Affinity rules for the auth-bridge pod.",
+          "default": {}
+        }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "description": "ServiceAccount settings.",
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "boolean",
+          "description": "Create a ServiceAccount.",
+          "default": false
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the ServiceAccount to use. If empty and create is true, a name is generated.",
+          "default": ""
+        }
+      }
+    },
+    "nameOverride": {
+      "type": "string",
+      "description": "Override the chart name used in resource names.",
+      "default": ""
+    },
+    "fullnameOverride": {
+      "type": "string",
+      "description": "Override the fully qualified app name used in resource names.",
+      "default": ""
+    }
+  }
+}
