@@ -22,7 +22,7 @@ sources:
   - https://github.com/braghettos/openstack-glance-operator-kog
 maintainers:
   - name: braghettos
-icon: https://raw.githubusercontent.com/krateoplatformops/krateo/main/docs/media/logo.svg
+icon: https://www.openstack.org/themes/openstack/images/project-mascots/Glance/OpenStack_Project_Glance_vertical.png
 annotations:
   krateo.io/category: storage
   krateo.io/display-name: OpenStack Glance KOG
