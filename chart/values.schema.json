@@ -3,17 +3,14 @@
   "title": "openstack-glance-operator-kog values",
   "description": "Values for the OpenStack Glance KOG (Krateo Operator Generator) chart. It emits per-resource RestDefinitions for Glance image v2 resources and a stateless Keystone-auth bridge proxy. Toggle resources and point the auth-bridge at your Glance/Keystone deployment.",
   "type": "object",
-  "additionalProperties": false,
   "properties": {
     "restdefinitions": {
       "type": "object",
       "description": "Per-resource RestDefinitions emitted by this chart. Each entry can be toggled on/off and carries its resourceGroup and resourceKind.",
-      "additionalProperties": false,
       "properties": {
         "image": {
           "type": "object",
           "description": "Glance Image (metadata) resource: create / get / delete. Glance v2 is flat JSON so the Kind is unprefixed. No update verb (Glance update is JSON-Patch only).",
-          "additionalProperties": false,
           "properties": {
             "enabled": {
               "type": "boolean",
@@ -35,7 +32,6 @@
         "imageimport": {
           "type": "object",
           "description": "Glance ImageImport (web-download) resource: a single-fire action that populates a queued image from a URL, making it ACTIVE.",
-          "additionalProperties": false,
           "properties": {
             "enabled": {
               "type": "boolean",
@@ -57,7 +53,6 @@
         "imagemember": {
           "type": "object",
           "description": "Glance ImageMember resource: share / get / unshare an image with another project.",
-          "additionalProperties": false,
           "properties": {
             "enabled": {
               "type": "boolean",
@@ -81,7 +76,6 @@
     "authBridge": {
       "type": "object",
       "description": "Stateless Keystone-auth reverse proxy (openstacksdk). Authenticates with clouds.yaml, discovers the Glance image endpoint, injects a fresh auto-refreshing X-Auth-Token and forwards the controller's plain-HTTP calls upstream.",
-      "additionalProperties": false,
       "required": [
         "upstreamEndpoint"
       ],
@@ -125,7 +119,6 @@
         "image": {
           "type": "object",
           "description": "Container image for the auth-bridge proxy.",
-          "additionalProperties": false,
           "properties": {
             "repository": {
               "type": "string",
@@ -152,7 +145,6 @@
         "service": {
           "type": "object",
           "description": "Service exposing the auth-bridge proxy in-cluster.",
-          "additionalProperties": false,
           "properties": {
             "type": {
               "type": "string",
@@ -171,12 +163,10 @@
         "resources": {
           "type": "object",
           "description": "Compute resource requests and limits for the auth-bridge proxy container.",
-          "additionalProperties": false,
           "properties": {
             "requests": {
               "type": "object",
               "description": "Resource requests.",
-              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string",
@@ -193,7 +183,6 @@
             "limits": {
               "type": "object",
               "description": "Resource limits.",
-              "additionalProperties": false,
               "properties": {
                 "cpu": {
                   "type": "string",
@@ -237,7 +226,6 @@
     "serviceAccount": {
       "type": "object",
       "description": "ServiceAccount settings.",
-      "additionalProperties": false,
       "properties": {
         "create": {
           "type": "boolean",
