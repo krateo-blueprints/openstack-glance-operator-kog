@@ -1,0 +1,41 @@
+# Example Composition for the OpenStack Glance KOG blueprint.
+#
+# Applying this installs the KOG OPERATOR layer: the per-resource RestDefinitions
+# (Image / ImageImport / ImageMember) plus the stateless Keystone auth-bridge
+# proxy that injects a fresh X-Auth-Token in front of Glance.
+#
+# It does NOT create Glance images itself. Once the operator is running and the
+# generated CRDs exist, declare actual images with the per-resource CRs
+# (ImageConfiguration / Image / ImageImport / ImageMember) shipped in
+# chart/samples/image-resources.yaml.
+#
+# apiVersion / Kind convention: crdgen derives the CRD from the
+# CompositionDefinition. group = composition.krateo.io, version from the chart
+# version 0.1.0 => v0-1-0, Kind = PascalCase of the CD metadata.name with
+# hyphens removed (openstack-glance-operator-kog => OpenstackGlanceOperatorKog).
+#
+# Prereq: a Secret with your clouds.yaml in the target namespace, e.g.
+#   kubectl create secret generic glance-clouds \
+#     --from-file=clouds.yaml=clouds.yaml -n openstack
+---
+apiVersion: composition.krateo.io/v0-1-0
+kind: OpenstackGlanceOperatorKog
+metadata:
+  name: openstack-glance-operator-kog
+  namespace: openstack
+spec:
+  authBridge:
+    # THE key input: the upstream Glance image endpoint discovered from the
+    # Keystone catalog (override here, or leave empty to let openstacksdk
+    # discover it).
+    upstreamEndpoint: http://glance-api.openstack.svc.cluster.local:9292
+    cloudsSecret: glance-clouds
+    osCloud: openstack
+  restdefinitions:
+    image:
+      enabled: true
+    imageimport:
+      enabled: true
+    # Disable image sharing in this example; flip to true to manage members.
+    imagemember:
+      enabled: false
