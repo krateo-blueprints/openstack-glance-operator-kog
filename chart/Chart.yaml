@@ -17,9 +17,9 @@ keywords:
   - image
   - storage
   - operator
-home: https://github.com/braghettos/openstack-glance-operator-kog
+home: https://github.com/krateo-blueprints/openstack-glance-operator-kog
 sources:
-  - https://github.com/braghettos/openstack-glance-operator-kog
+  - https://github.com/krateo-blueprints/openstack-glance-operator-kog
 maintainers:
   - name: braghettos
 icon: https://raw.githubusercontent.com/krateoplatformops/krateo/main/docs/media/logo.svg
