@@ -1,0 +1,28 @@
+# openstack-glance-operator-kog — LLM doc index (pinned: 0.1.0)
+# One line per file; regenerate the pin on release. The chart version is
+# CompositionDefinition.spec.chart.version and equals appVersion — read files at the tag
+# that matches the running build.
+docs/index.md: the map — what the blueprint is + links to the whole bundle and the repo layout
+docs/overview.md: the KOG pipeline, the three RestDefinitions, the two Glance realities, the auth-bridge design
+docs/usage.md: install the operator, create an Image, populate it with a web-download ImageImport, share with ImageMember
+docs/configuration.md: the whole values surface — per-resource RestDefinition toggles + the auth-bridge knobs
+docs/api.md: the CompositionDefinition CRD and the generated Glance CRDs (Image, ImageImport, ImageMember) with their verbs
+docs/examples.md: index of the runnable examples
+docs/release.md: how a SemVer tag ships the chart to GHCR via release-chart.yaml
+docs/log.md: curated history
+docs/quickstart.md: the short end-to-end path — install, apply an Image + ImageImport, see it active in Horizon
+examples/composition/README.md: install the operator layer via a CompositionDefinition-derived OpenstackGlanceOperatorKog CR
+examples/composition/composition.yaml: the example CompositionDefinition-driven install manifest
+# Source (read at the same tag; the docs above are derived from these):
+chart/values.yaml: every value with its rationale in comments
+chart/values.schema.json: the typed value schema
+chart/Chart.yaml: chart + app version, KOG keywords, krateo annotations
+chart/assets/image.yaml: the OpenAPI subset for the Image resource (create / get / delete)
+chart/assets/image-import.yaml: the OpenAPI subset for the ImageImport web-download action
+chart/assets/image-member.yaml: the OpenAPI subset for the ImageMember share resource
+chart/templates/rd-image.yaml: the Image RestDefinition (verbs, identifiers, status fields)
+chart/templates/rd-image-import.yaml: the ImageImport RestDefinition (single-fire web-download)
+chart/templates/rd-image-member.yaml: the ImageMember RestDefinition (share / get / unshare)
+chart/scripts/openstack-auth-proxy.py: the openstacksdk Keystone-auth proxy
+chart/samples/image-resources.yaml: ready-to-edit sample Glance CRs
+compositiondefinition.yaml: this component's own registration (spec.chart.version = the published chart)
