@@ -1,3 +1,12 @@
+---
+type: Runbook
+title: openstack-glance-operator-kog — quickstart
+description: The short end-to-end path — install the Glance KOG operator, apply an Image plus a web-download ImageImport, and watch the image go active in Horizon.
+resource: oci://ghcr.io/krateo-blueprints/charts/openstack-glance-operator-kog
+tags: [krateo, kog, glance, quickstart, image-import]
+timestamp: 2026-08-11T00:00:00Z
+---
+
 # Quickstart — Glance (image) operator
 
 Manage OpenStack **Glance** images as Kubernetes CRs. End to end: install the
