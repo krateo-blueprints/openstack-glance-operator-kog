@@ -31,6 +31,10 @@ auto-refreshing `X-Auth-Token` in front of Glance. See
 Prerequisites: Krateo's `oasgen-provider` in the cluster and an admin `clouds.yaml`
 in a Secret.
 
+Requires **oasgen-provider >= 0.52.0**: `ImageImport` uses a get `notFoundBody` and response
+`fieldMapping` ([docs/api.md](docs/api.md)). CI reads this minimum (`hack/validate-findby-identifiers.py`),
+so keep it the one place the version is stated.
+
 ```bash
 kubectl -n krateo-system create secret generic glance-clouds --from-file=clouds.yaml=clouds.yaml
 helm upgrade --install glance-kog ./chart -n krateo-system \
