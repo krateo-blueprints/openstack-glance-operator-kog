@@ -9,6 +9,14 @@ spec:
   oasPath: configmap://{{ .Release.Namespace }}/{{ .Release.Name }}-image-member/imagemember.yaml
   resourceGroup: {{ .Values.restdefinitions.imagemember.resourceGroup }}
   resource:
+    # Glance's member representation is {member_id, image_id, status, created_at, updated_at, schema}
+    # (glance/api/v2/image_members.py ResponseSerializer._format_image_member); it has no `member`.
+    # The identifier `member` therefore never filled status.member. Observation was unaffected: the
+    # get is addressed from spec.member, and an absent key is not drift. The response fieldMappings
+    # below copy member_id to `member` (and keep member_id, which is also a status field), so
+    # status.member is populated and spec.member is compared against what Glance returns.
+    # identifiers / additionalStatusFields are unchanged: oasgen-provider makes them immutable /
+    # append-only on an installed RestDefinition.
     kind: {{ .Values.restdefinitions.imagemember.resourceKind }}
     identifiers:
       - member
@@ -22,6 +30,11 @@ spec:
         requestFieldMapping:
           - inPath: image_id
             inCustomResource: spec.image_id
+        fieldMapping:
+          - inResponse: member_id
+            inCustomResource: status.member
+          - inResponse: member_id
+            inCustomResource: status.member_id
       - action: get
         method: GET
         path: /v2/images/{image_id}/members/{member_id}
@@ -30,6 +43,11 @@ spec:
             inCustomResource: spec.image_id
           - inPath: member_id
             inCustomResource: spec.member
+        fieldMapping:
+          - inResponse: member_id
+            inCustomResource: status.member
+          - inResponse: member_id
+            inCustomResource: status.member_id
       - action: delete
         method: DELETE
         path: /v2/images/{image_id}/members/{member_id}

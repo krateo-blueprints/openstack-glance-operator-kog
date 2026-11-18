@@ -41,6 +41,12 @@ jobs:
       - name: ImageImport predicate against every image state (hack/test-image-import-predicate.py)
         run: python3 hack/test-image-import-predicate.py chart
 
+      # Gating. Every identifier and additionalStatusField must be present in the response schema its
+      # observe verb reads (through response fieldMappings, minus sources they remove);
+      # rest-dynamic-controller skips an absent one silently, so the status column stays empty.
+      - name: Every status field resolves in its observe response (hack/validate-status-fields.py)
+        run: python3 hack/validate-status-fields.py chart
+
       - name: helm template + lint every chart (informational)
         run: |
           set -uo pipefail
