@@ -11,6 +11,14 @@ timestamp: 2026-11-18T00:00:00Z
 
 Curated history; release notes live in GitHub Releases.
 
+## Unreleased — create reachability rests on evidence, not on a declared 404
+
+Same `hack/validate-findby-identifiers.py` as keystone-kog's. A 404 declared in the OAS is not evidence,
+because rest-dynamic-controller decides absence from the wire status. `ImageImport` passes through its
+functional `notFoundBody`. `ImageMember` now carries a `kog.openstack.krateo.io/get-absent-evidence`
+citation: Glance's member `show` raises `HTTPNotFound` for a non-member. Its OAS 404 stays as
+documentation. `hack/README.md` names each declaration's consuming file:line.
+
 ## Unreleased — findby gate: reachability, its oasgen floor, the inert findby+create shape
 
 `hack/validate-findby-identifiers.py` is the same script as keystone-kog's. It refuses a findby that a

@@ -3,6 +3,13 @@ apiVersion: ogen.krateo.io/v1alpha1
 kind: RestDefinition
 metadata:
   name: {{ .Release.Name }}-image-member
+  annotations:
+    # The get must be able to answer "absent", or the create never runs (hack/validate-findby-identifiers.py).
+    # A 404 declared in the OAS is documentation only; this is the vendor evidence that the get 404s.
+    kog.openstack.krateo.io/get-absent-evidence: >-
+      glance stable/2026.1 glance/api/v2/image_members.py ImageMembersController.show L282-312 calls
+      _lookup_member, which raises webob.exc.HTTPNotFound when the project is not a member (L101-118),
+      so 404 when absent.
   labels:
     {{- include "openstack-glance-operator-kog.labels" . | nindent 4 }}
 spec:
