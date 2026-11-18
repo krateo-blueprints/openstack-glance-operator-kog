@@ -11,6 +11,14 @@ timestamp: 2026-11-18T00:00:00Z
 
 Curated history; release notes live in GitHub Releases.
 
+## Unreleased — findby gate: reachability, its oasgen floor, the inert findby+create shape
+
+`hack/validate-findby-identifiers.py` is the same script as keystone-kog's. It refuses a findby that a
+spec-buildable get makes unreachable, and reports create reachability: `ImageImport` is fine through
+its `notFoundBody`, and `ImageMember` through its declared 404. It also states the oasgen-provider
+floor its verdicts assume (0.52.0, #421) and reads the repository's minimum from the README, now
+stated as `oasgen-provider >= 0.52.0`.
+
 ## Unreleased — `ImageMember` fills `status.member`; status-field gate
 
 `ImageMember`'s identifier `member` is not in Glance's member representation. Glance returns
