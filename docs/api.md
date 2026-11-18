@@ -113,7 +113,11 @@ and the Glance deployment must enable the `web-download` import method.
 ### `ImageMember` — `image.openstack.krateo.io/v2-0`
 
 Share an image with another project: create / get / delete a member. Identifier:
-`member`. Status fields: `member_id`, `status`.
+`member`. Status fields: `member` and `member_id` (both the member project id), `status`.
+Glance's member representation has `member_id`, not `member`
+(`glance/api/v2/image_members.py` `_format_image_member`), so response fieldMappings copy it
+to `member`. Through 0.1.2 `status.member` stayed empty. Observation and readiness were never
+affected, because the get is addressed from `spec.member`.
 
 | verb | method / path |
 |---|---|

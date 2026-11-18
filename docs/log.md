@@ -11,6 +11,20 @@ timestamp: 2026-11-18T00:00:00Z
 
 Curated history; release notes live in GitHub Releases.
 
+## Unreleased — `ImageMember` fills `status.member`; status-field gate
+
+`ImageMember`'s identifier `member` is not in Glance's member representation. Glance returns
+`member_id`, `image_id`, `status`, `created_at`, `updated_at` and `schema`
+(`glance/api/v2/image_members.py` `_format_image_member`), so `status.member` was always empty.
+Create, observe and Ready were unaffected: the get is addressed from `spec.member`, and an absent key
+is not drift. Response fieldMappings on create and get now copy `member_id` to `member`, and keep
+`member_id`, which is also a status field. So `status.member` fills in, and `spec.member` is compared
+against what Glance returns.
+
+New CI gate `hack/validate-status-fields.py`, ported from neutron-kog. It now models a mapping's
+source removal: a status field whose source a fieldMapping moves elsewhere is reported, because the
+normalization removes it. main's `ImageMember` fails it, and so does a mapping that drops `member_id`.
+
 ## Unreleased — `ImageImport` is observed through the image and fires once
 
 `ImageImport` used a findby on `GET /v2/images` keyed on `image_id`. Glance's image items carry
