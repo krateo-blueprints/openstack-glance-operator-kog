@@ -87,6 +87,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Member'
+        '404':
+          description: Not a member (glance/api/v2/image_members.py show -> HTTPNotFound) -- what the controller reads as "absent", so the create runs
     delete:
       operationId: deleteMember
       summary: Unshare (delete a member)
