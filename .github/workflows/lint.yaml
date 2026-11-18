@@ -27,6 +27,20 @@ jobs:
           find . -type f -name Chart.yaml -not -path '*/charts/*' -not -path './.git/*' \
             -exec sed -i "s/CHART_VERSION/0.0.0-ci/g" {} +
 
+      # Gating. A findby whose identifiers are not keys of the list item can never match, so absence
+      # is inferred every reconcile and create re-fires. Also refuses an undeclared findby item.
+      # Self-tests first. (Origin: keystone-kog IdentityRoleAssignment, data-plane run dp303.)
+      - name: findby identifiers are keys of the list item
+        run: |
+          set -euo pipefail
+          python3 -m pip install --quiet "pyyaml==6.0.2"
+          python3 hack/validate-findby-identifiers.py chart
+
+      # Gating. ImageImport's notFoundBody decides when the import is sent. It must fire for a
+      # never-imported image and must NOT fire for a failed import, which would loop forever.
+      - name: ImageImport predicate against every image state (hack/test-image-import-predicate.py)
+        run: python3 hack/test-image-import-predicate.py chart
+
       - name: helm template + lint every chart (informational)
         run: |
           set -uo pipefail

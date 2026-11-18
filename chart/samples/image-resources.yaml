@@ -12,7 +12,7 @@ spec:
     bearer:
       tokenRef: { name: glance-token, namespace: krateo-system, key: token }
 ---
-apiVersion: image.openstack.krateo.io/v1alpha1
+apiVersion: image.openstack.krateo.io/v2-0
 kind: Image
 metadata:
   name: cirros
@@ -25,7 +25,7 @@ spec:
   visibility: private
 ---
 # Populate the queued image from a URL (makes it ACTIVE). Fill in the Image's id.
-apiVersion: image.openstack.krateo.io/v1alpha1
+apiVersion: image.openstack.krateo.io/v2-0
 kind: ImageImport
 metadata:
   name: cirros-import
