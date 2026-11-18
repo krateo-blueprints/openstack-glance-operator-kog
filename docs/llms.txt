@@ -21,7 +21,9 @@ chart/assets/image.yaml: the OpenAPI subset for the Image resource (create / get
 chart/assets/image-import.yaml: the OpenAPI subset for the ImageImport web-download action
 chart/assets/image-member.yaml: the OpenAPI subset for the ImageMember share resource
 chart/templates/rd-image.yaml: the Image RestDefinition (verbs, identifiers, status fields)
-chart/templates/rd-image-import.yaml: the ImageImport RestDefinition (single-fire web-download)
+chart/templates/rd-image-import.yaml: the ImageImport RestDefinition (observed via GET /v2/images/{id}; notFoundBody fires the import only if none ever started)
+hack/test-image-import-predicate.py: CI test of that predicate against every image state Glance leaves (incl. a failed import, which must not re-fire)
+hack/validate-findby-identifiers.py: CI gate — every findby identifier is a key of the declared list item
 chart/templates/rd-image-member.yaml: the ImageMember RestDefinition (share / get / unshare)
 chart/scripts/openstack-auth-proxy.py: the openstacksdk Keystone-auth proxy
 chart/samples/image-resources.yaml: ready-to-edit sample Glance CRs

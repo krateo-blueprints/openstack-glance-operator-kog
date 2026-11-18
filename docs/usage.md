@@ -4,7 +4,7 @@ title: openstack-glance-operator-kog — usage
 description: How to install the Glance KOG operator and drive it — create an Image (metadata), populate it with a web-download ImageImport, and share it with an ImageMember.
 resource: oci://ghcr.io/krateo-blueprints/charts/openstack-glance-operator-kog
 tags: [krateo, kog, glance, install, image-import]
-timestamp: 2026-08-11T00:00:00Z
+timestamp: 2026-11-18T00:00:00Z
 ---
 
 # Usage
@@ -70,7 +70,7 @@ spec:
         namespace: krateo-system
         key: token
 ---
-apiVersion: image.openstack.krateo.io/v1alpha1
+apiVersion: image.openstack.krateo.io/v2-0
 kind: Image
 metadata:
   name: kog-demo-image
@@ -92,7 +92,7 @@ $ IMGID=$(kubectl -n krateo-system get image.image.openstack.krateo.io kog-demo-
 ```
 
 ```yaml
-apiVersion: image.openstack.krateo.io/v1alpha1
+apiVersion: image.openstack.krateo.io/v2-0
 kind: ImageImport
 metadata:
   name: kog-demo-import
@@ -117,7 +117,7 @@ Enable `imagemember` (`restdefinitions.imagemember.enabled=true`) and declare an
 `ImageMember` to share an image with another project:
 
 ```yaml
-apiVersion: image.openstack.krateo.io/v1alpha1
+apiVersion: image.openstack.krateo.io/v2-0
 kind: ImageMember
 metadata:
   name: kog-demo-share

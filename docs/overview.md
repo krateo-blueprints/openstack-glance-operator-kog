@@ -4,7 +4,7 @@ title: openstack-glance-operator-kog — overview
 description: What the blueprint does and how it is built — the KOG pipeline, the three per-resource RestDefinitions, the two Glance realities (no update verb, no binary upload), and the auto-refreshing auth-bridge.
 resource: oci://ghcr.io/krateo-blueprints/charts/openstack-glance-operator-kog
 tags: [krateo, kog, glance, restdefinition, auth-bridge]
-timestamp: 2026-08-11T00:00:00Z
+timestamp: 2026-11-18T00:00:00Z
 ---
 
 # Overview
@@ -40,7 +40,7 @@ Kind-vs-property collision and the Kinds are unprefixed (`Image`, `ImageImport`,
 | Kind | Glance API | verbs | notes |
 |---|---|---|---|
 | `Image` | `/v2/images` | create (metadata) / get / delete | no update verb — see below |
-| `ImageImport` | `POST /v2/images/{id}/import` | web-download import (single-fire) | `findby` never matches, so create fires exactly once |
+| `ImageImport` | `GET /v2/images/{id}`, `POST /v2/images/{id}/import` | web-download import | observed through the image; fires only if no import ever started |
 | `ImageMember` | `/v2/images/{id}/members` | share (create) / get / unshare (delete) | disabled by default in the example |
 
 Each resource can be toggled independently under
@@ -58,9 +58,11 @@ octet-stream upload, not JSON. So an `Image` creates only the **metadata** (the
 image lands in status `queued`). To get a usable (`active`) image, apply an
 **`ImageImport`** with `method.name: web-download` and a source `uri` — Glance
 fetches the data itself. This requires the `web-download` import method to be
-enabled on the Glance deployment. The `ImageImport` is modeled as a single-fire
-action (like KOG's `NodeProvision`): its `findby` verb never matches `image_id`, so
-`create` (`POST .../import`) fires once and the `202` sets a Pending condition.
+enabled on the Glance deployment. The `ImageImport` is observed through the image
+(`GET /v2/images/{id}`). `create` (`POST .../import`) fires only while the image shows
+no sign that an import ever started, so a failed import is not retried in a loop. Ready
+means accepted; `status.status` shows `importing` and then `active`. See
+[api.md](api.md).
 
 ## Auth: the openstacksdk proxy (auto-refreshing)
 

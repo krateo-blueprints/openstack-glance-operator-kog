@@ -15,7 +15,7 @@ reconciled by the generic `rest-dynamic-controller`.
 | Kind | Glance API | verbs |
 |------|------------|-------|
 | `Image` | `/v2/images` | create (metadata) / get / delete |
-| `ImageImport` | `POST /v2/images/{id}/import` | web-download import (single-fire) |
+| `ImageImport` | `GET /v2/images/{id}` + `POST /v2/images/{id}/import` | web-download import (fires once; Ready = accepted) |
 | `ImageMember` | `/v2/images/{id}/members` | share / get / unshare |
 
 Two Glance realities shape it: there is **no update verb** (Glance image update is

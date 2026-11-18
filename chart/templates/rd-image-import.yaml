@@ -9,17 +9,58 @@ spec:
   oasPath: configmap://{{ .Release.Namespace }}/{{ .Release.Name }}-image-import/imageimport.yaml
   resourceGroup: {{ .Values.restdefinitions.imageimport.resourceGroup }}
   resource:
-    # web-download import is a one-shot action. findby on the image list never
-    # matches image_id, so create (POST .../import) fires; the 202 sets a Pending
-    # condition so it fires exactly once.
+    # A web-download import into one image. Observed through the image itself:
+    #
+    #   get    = GET /v2/images/{image_id}. notFoundBody (below) reports "absent" -- so create
+    #            fires -- only while the image shows NO sign that an import was ever started.
+    #   create = POST /v2/images/{image_id}/import (202). No delete: an import cannot be undone, and
+    #            deleting this CR must not delete the image.
+    #
+    # Why the predicate is shaped this way (Glance stable/2026.1):
+    #   - status `queued` alone is not enough: a FAILED import reverts the image to `queued`
+    #     (async_/flows/api_image_import.py _VerifyImageState.revert) and drops the import lock
+    #     (_ImageLock.revert). Keyed on status, a failed import would be re-sent every reconcile.
+    #   - os_glance_import_task is the import lock, set synchronously before the 202
+    #     (api/v2/images.py set_property_atomic) and dropped when the task ends. Present = running.
+    #   - os_glance_importing_to_stores / os_glance_failed_import are written when the import flow
+    #     starts (get_flow -> merge_store_list writes the key unconditionally, empty on a
+    #     single-store deployment) and nothing on the web-download path removes them. Present = an
+    #     import ran at least once, whether it succeeded or failed.
+    #   So "absent" = queued, unlocked, and never imported. A failed import stays failed (Ready, with
+    #   status.status still `queued`): it is not retried, because retrying a permanent failure such
+    #   as a bad URI would loop. Re-import by creating a new image.
+    #
+    # Ready means the import was ACCEPTED, not that the image is active: rest-dynamic-controller has
+    # no "exists but not ready" for a get-observed kind, and reporting "absent" while importing would
+    # re-POST into a 409. Progress is in status.status (queued -> importing -> active).
+    #
+    # This replaces a findby on GET /v2/images keyed on image_id, which Glance's image items never
+    # carry (they have `id`): it could never match and relied on the 202 latching Pending.
+    #
+    # identifiers are unchanged: oasgen-provider makes them immutable on an installed RestDefinition.
     kind: {{ .Values.restdefinitions.imageimport.resourceKind }}
     identifiers:
       - image_id
+    additionalStatusFields:
+      - status
+      - os_glance_import_task
+      - os_glance_failed_import
     verbsDescription:
-      - action: findby
+      - action: get
         method: GET
-        path: /v2/images
-        identifiersMatchPolicy: OR
+        path: /v2/images/{image_id}
+        requestFieldMapping:
+          - inPath: image_id
+            inCustomResource: spec.image_id
+        fieldMapping:
+          - inResponse: id
+            inCustomResource: status.image_id
+        notFoundBody:
+          inline: >-
+            .status == "queued"
+            and ((.os_glance_import_task // "") == "")
+            and (has("os_glance_importing_to_stores") | not)
+            and (has("os_glance_failed_import") | not)
       - action: create
         method: POST
         path: /v2/images/{image_id}/import

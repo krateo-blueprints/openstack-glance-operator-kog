@@ -4,12 +4,29 @@ info:
   description: |
     Trigger a web-download import on a queued image: Glance fetches the image
     data from a URL and the image becomes ACTIVE - the KOG-friendly alternative
-    to the binary PUT /v2/images/{id}/file upload. Modeled as a single-fire
-    action CR (like KOG's NodeProvision): create fires POST /v2/images/{id}/import
-    once. The Kind is `ImageImport`.
+    to the binary PUT /v2/images/{id}/file upload. The Kind is `ImageImport`.
+
+    Observed through the image itself, GET /v2/images/{image_id}. The
+    RestDefinition's notFoundBody decides "the import was never started" from
+    fields Glance (stable/2026.1) writes on the image:
+      - os_glance_import_task: the import lock, set synchronously before the
+        202 (glance/api/v2/images.py, set_property_atomic) and dropped when the
+        task ends;
+      - os_glance_importing_to_stores / os_glance_failed_import: written when the
+        import flow starts (glance/async_/flows/api_image_import.py get_flow,
+        merge_store_list) and never removed on the web-download path, so they
+        mark that an import ran at least once, even after it failed and the
+        image reverted to `queued`.
 
     Prerequisites: the image must be in `queued` state and the Glance deployment
-    must enable the `web-download` import method.
+    must enable the `web-download` import method. Field names follow the Image
+    service api-ref (https://docs.openstack.org/api-ref/image/v2/): "Show image"
+    and "Import an image".
+
+    No `security` requirement is declared: neither oasgen-provider nor
+    rest-dynamic-controller reads security requirements, only securitySchemes,
+    which still generate the <Kind>Configuration. The auth-bridge injects the
+    real X-Auth-Token.
   version: "2.0"
 servers:
   - url: {{ include "openstack-glance-operator-kog.authBridgeUrl" . }}
@@ -40,29 +57,44 @@ components:
           description: ID of the queued image to import into (path parameter).
         method:
           $ref: '#/components/schemas/ImportMethod'
-security:
-  - bearer: []
+    Image:
+      type: object
+      description: The subset of Glance's image representation this kind reads.
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          description: queued, saving, uploading, importing, active, killed, deleted or deactivated.
+        os_glance_import_task:
+          type: string
+          description: ID of the import task holding the image's import lock; absent when no import is running.
+        os_glance_importing_to_stores:
+          type: string
+          description: Comma-separated stores still being imported to (empty on a single-store deployment).
+        os_glance_failed_import:
+          type: string
+          description: Comma-separated stores whose import failed (empty on a single-store deployment).
 paths:
-  /v2/images:
+  /v2/images/{image_id}:
+    parameters:
+      - name: image_id
+        in: path
+        required: true
+        schema:
+          type: string
     get:
-      operationId: listImagesForImport
-      summary: List images (observe path for the import action)
-      tags: [image-import]
-      security:
-        - bearer: []
+      operationId: showImage
+      summary: Show the image the import targets
+      tags:
+        - image-import
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  images:
-                    type: array
-                    items:
-                      type: object
-                      additionalProperties: true
+                $ref: '#/components/schemas/Image'
   /v2/images/{image_id}/import:
     parameters:
       - name: image_id
@@ -73,9 +105,8 @@ paths:
     post:
       operationId: importImage
       summary: Start a web-download import on an image
-      tags: [image-import]
-      security:
-        - bearer: []
+      tags:
+        - image-import
       requestBody:
         required: true
         content:

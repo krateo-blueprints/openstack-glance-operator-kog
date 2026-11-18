@@ -4,7 +4,7 @@ title: openstack-glance-operator-kog — quickstart
 description: The short end-to-end path — install the Glance KOG operator, apply an Image plus a web-download ImageImport, and watch the image go active in Horizon.
 resource: oci://ghcr.io/krateo-blueprints/charts/openstack-glance-operator-kog
 tags: [krateo, kog, glance, quickstart, image-import]
-timestamp: 2026-08-11T00:00:00Z
+timestamp: 2026-11-18T00:00:00Z
 ---
 
 # Quickstart — Glance (image) operator
@@ -50,7 +50,7 @@ kind: ImageConfiguration
 metadata: {name: glance-config, namespace: krateo-system}
 spec: {authentication: {bearer: {tokenRef: {name: glance-token, namespace: krateo-system, key: token}}}}
 ---
-apiVersion: image.openstack.krateo.io/v1alpha1
+apiVersion: image.openstack.krateo.io/v2-0
 kind: Image
 metadata: {name: kog-demo-image, namespace: krateo-system}
 spec:
@@ -64,7 +64,7 @@ EOF
 # read the image id, then import data from a URL
 IMGID=$(kubectl -n krateo-system get image.image.openstack.krateo.io kog-demo-image -o jsonpath='{.status.id}')
 cat <<EOF | kubectl apply -f -
-apiVersion: image.openstack.krateo.io/v1alpha1
+apiVersion: image.openstack.krateo.io/v2-0
 kind: ImageImport
 metadata: {name: kog-demo-import, namespace: krateo-system}
 spec:
